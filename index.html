@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>🚗 EmoDrive | Real-Time Emotion AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        aside {
+            width: 300px;
+            background: #4B3E98;
+            color: white;
+            padding: 2em 1em;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        aside h2 {
+            font-size: 1.6rem;
+            margin-bottom: 1em;
+        }
+
+        .status-box {
+            padding: 1em;
+            border-radius: 10px;
+            margin-bottom: 1em;
+        }
+
+        .info { background: #ffffff22; }
+        .success { background: #28a74544; }
+        .error { background: #dc354544; }
+
+        main {
+            flex-grow: 1;
+            padding: 2em;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            color: white;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.2em;
+        }
+
+        header p {
+            max-width: 700px;
+            font-size: 1.1rem;
+            margin-bottom: 2em;
+        }
+
+        .video-feed {
+            text-align: center;
+        }
+
+        .video-feed img {
+            width: 90%;
+            max-width: 900px;
+            border: 6px solid white;
+            border-radius: 12px;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.2);
+        }
+
+        .video-caption {
+            margin-top: 0.5em;
+            font-size: 1rem;
+            font-style: italic;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .btn {
+            background-color: white;
+            color: #764ba2;
+            border: none;
+            padding: 14px 28px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .btn:hover {
+            background-color: #f0f0f0;
+        }
+
+        .log-section {
+            margin-top: 2em;
+            background: white;
+            color: #333;
+            border-radius: 12px;
+            padding: 1em;
+        }
+
+        .log-section h3 {
+            margin-top: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1em;
+        }
+
+        table th, table td {
+            text-align: left;
+            padding: 0.5em;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .sidebar-settings {
+            position: absolute;
+            top: 1em;
+            right: 1em;
+        }
+
+        .kebab-menu {
+            font-size: 1.5rem;
+            background: none;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .settings-dropdown {
+            display: none;
+            position: absolute;
+            top: 2em;
+            right: 0;
+            background-color: white;
+            color: black;
+            min-width: 200px;
+            padding: 1em;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .settings-dropdown input,
+        .settings-dropdown select {
+            width: 100%;
+            margin: 0.5em 0;
+            padding: 0.5em;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 2em;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="sidebar-settings">
+        <button onclick="toggleSettingsMenu()" class="kebab-menu">⋮</button>
+        <div id="settingsMenu" class="settings-dropdown">
+            <label>
+                Theme:
+                <select onchange="changeTheme(this.value)">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
+            </label>
+            <label>
+                Username:
+                <input type="text" id="usernameInput" placeholder="Enter your name">
+            </label>
+            <button onclick="saveUserData()">Save</button>
+        </div>
+    </div>
+
+    <div>
+        <h2>📊 Live Status</h2>
+        <div class="status-box info">Emotion: <strong>{{ current_emotion }}</strong></div>
+        <div class="status-box success">SMS Sent: <strong>{{ sms_sent }}</strong></div> 
+        <div class="status-box error">Sound Triggered: <strong>{{ sound_triggered }}</strong></div>
+        <div class="status-box info">Confidence: <strong>{{ emotion_confidence }}%</strong></div>
+    </div>
+    <footer>
+        &copy; 2025 EmoDrive
+    </footer>
+</aside>
+
+<main>
+    <header>
+        <h1>🚗 EmoDrive - Real-Time Emotion Detection</h1>
+        <p>AI-powered driver monitoring system that detects emotions like anger, fear, or drowsiness in real time and triggers alerts to enhance road safety.</p>
+    </header>
+
+    <div class="video-feed">
+        <img src="{{ url_for('video_feed') }}" alt="Live Emotion Feed">
+        <div class="video-caption">Live camera feed - detecting and analyzing emotions</div>
+    </div>
+
+    <div class="buttons">
+        <a href="/start"><button class="btn">▶ Start Detection</button></a>
+        <a href="/stop"><button class="btn">⏹ Stop Detection</button></a>
+    </div>
+
+    <div class="log-section">
+        <h3>🧠 Emotion Detection Log</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Emotion</th>
+                    <th>Confidence (%)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in emotion_log %}
+                <tr>
+                    <td>{{ entry.time }}</td>
+                    <td>{{ entry.emotion }}</td>
+                    <td>{{ entry.confidence }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<script>
+    function toggleSettingsMenu() {
+        const menu = document.getElementById('settingsMenu');
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function changeTheme(theme) {
+        if (theme === 'dark') {
+            document.body.style.background = 'linear-gradient(to right, #232526, #414345)';
+        } else {
+            document.body.style.background = 'linear-gradient(to right, #667eea, #764ba2)';
+        }
+    }
+
+    function saveUserData() {
+        const username = document.getElementById('usernameInput').value;
+        localStorage.setItem('emodrive_username', username);
+        alert('User data saved!');
+    }
+
+    window.onload = () => {
+        const savedName = localStorage.getItem('emodrive_username');
+        if (savedName) {
+            document.getElementById('usernameInput').value = savedName;
+        }
+        updateStatus(); // initial call
+    };
+
+    function updateStatus() {
+        fetch('/status')
+            .then(response => response.json())
+            .then(data => {
+                const statusBoxes = document.querySelectorAll(".status-box");
+                statusBoxes[0].querySelector("strong").innerText = data.current_emotion;
+                statusBoxes[1].querySelector("strong").innerText = data.sms_sent;
+                statusBoxes[2].querySelector("strong").innerText = data.sound_triggered;
+                statusBoxes[3].querySelector("strong").innerText = data.emotion_confidence + '%';
+
+                const logTable = document.querySelector("tbody");
+                logTable.innerHTML = '';
+                data.emotion_log.forEach(entry => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${entry.time}</td><td>${entry.emotion}</td><td>${entry.confidence}</td>`;
+                    logTable.appendChild(row);
+                });
+            })
+            .catch(err => console.error('Error updating status:', err));
+    }
+
+    setInterval(updateStatus, 3000);
+</script>
+
+</body>
+</html>
